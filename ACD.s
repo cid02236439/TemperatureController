@@ -7,6 +7,11 @@ ARG1L:    ds	1
 ARG1H:    ds	1
 ARG2L:    ds	1
 ARG2H:    ds	1
+    
+BRG1H:	  ds	1
+BRG1M:	  ds	1
+BRG1L:	  ds	1
+BRG2:	  ds	1
 
 RES0:	ds  1
 RES1:	ds  1
@@ -41,7 +46,7 @@ adc_loop:
 	return
 
 ;;;	
-long_multiplication:
+long_16x16_multiplication:
 	MOVF	ARG1L, W, A
 	MULWF	ARG2L, A ; ARG1L * ARG2L-> 
 		    ; PRODH:PRODL 
@@ -76,81 +81,98 @@ long_multiplication:
 	
 	return
 
+asymmetric_24x8_multiplication:
+	MOVF	BRG1L, W, A
+	MULWF	BRG2, A ; BRG1L * BRG2-> 
+		    ; PRODH:PRODL 
+	MOVFF	PRODH, RES1 ; 
+	MOVFF	PRODL, RES0 ; 
+	; 
+	MOVF	BRG1M, W, A 
+	MULWF	BRG2, A ; BRG1M * BRG2-> 
+		    ; PRODH:PRODL 
+	MOVF	PRODL, W, A ; 
+	ADDWF	RES1, 1, 0 ; Add cross 
+	MOVF	PRODH, W, A ; products 
+	ADDWFC	RES2, 1, 0 ; 
+	CLRF	WREG, A ; 
+	ADDWFC	RES3, 1, 0 ; 
+			; 
+	MOVF	BRG1H, W, A ; 
+	MULWF	BRG2, A ; BRG1H * BRG2-> 
+		    ; PRODH:PRODL 
+	MOVF	PRODL, W, A ; 
+	ADDWF	RES1, 1, 0 ; Add cross 
+	MOVF	PRODH, W, A ; products 
+	ADDWFC	RES2, 1, 0 ; 
+	CLRF	WREG, A ; 
+	ADDWFC	RES3, 1, 0 ;
+	
+	return
+    
+	
 hex_to_deci_converter:
-    ;;; First Multiplication
-    MOVFF   ADRESH, ARG1H
-    MOVFF   ADRESL, ARG1L
-    
-    MOVLW   0x41
-    MOVWF   ARG2H, A
-    MOVLW   0x8A
-    MOVWF   ARG2L, A
-    
-    CALL    long_multiplication
-    
-    ;store the most significant byte
-    MOVFF   RES3, DIGIT1    
-    
-    ;;; Second Multiplication
-    MOVLW   0x00
-    MOVWF   ARG1H, A
-    MOVFF   RES2, ARG1L
-    
-    MOVLW   0x00
-    MOVWF   ARG2H, A
-    MOVLW   0x0A
-    MOVWF   ARG2L, A
-    
-    CALL    long_multiplication
-    
-    MOVFF   RES3, DIGIT2
-    
-    ;;; Third Multiplication
-    MOVLW   0x00
-    MOVWF   ARG1H, A
-    MOVFF   RES2, ARG1L
-    
-    MOVLW   0x00
-    MOVWF   ARG2H, A
-    MOVLW   0x0A
-    MOVWF   ARG2L, A
-    
-    CALL    long_multiplication
-    
-    MOVFF   RES3, DIGIT3
-    
-    ;;; Fourth Multiplication
-    MOVLW   0x00
-    MOVWF   ARG1H, A
-    MOVFF   RES2, ARG1L
-    
-    MOVLW   0x00
-    MOVWF   ARG2H, A
-    MOVLW   0x0A
-    MOVWF   ARG2L, A
-    
-    CALL    long_multiplication
-    
-    MOVFF   RES3, DIGIT4
-    
-    call digit_combiner
-    
-    return
+	;;; First Multiplication
+	MOVFF   ADRESH, ARG1H
+	MOVFF   ADRESL, ARG1L
+
+	MOVLW   0x41
+	MOVWF   ARG2H, A
+	MOVLW   0x8A
+	MOVWF   ARG2L, A
+
+	CALL    long_16x16_multiplication
+
+	MOVFF   RES3, DIGIT1    ;store the most significant byte
+
+	;;; Second Multiplication
+	MOVFF   RES2, BRG1H
+	MOVFF   RES1, BRG1M
+	MOVFF   RES0, BRG1L
+
+	MOVLW   0x0A
+	MOVWF   BRG2, A
+
+	CALL    asymmetric_24x8_multiplication
+
+	MOVFF   RES3, DIGIT2
+
+	;;; Third Multiplication
+	MOVFF   RES2, BRG1H
+	MOVFF   RES1, BRG1M
+	MOVFF   RES0, BRG1L
+
+	CALL    asymmetric_24x8_multiplication
+
+	MOVFF   RES3, DIGIT3
+
+	;;; Fourth Multiplication
+	MOVFF   RES2, BRG1H
+	MOVFF   RES1, BRG1M
+	MOVFF   RES0, BRG1L
+
+	CALL    asymmetric_24x8_multiplication
+
+	MOVFF   RES3, DIGIT4
+
+	call digit_combiner
+
+	return
     
 digit_combiner:
-    ;;; Higher byte
-    MOVLW   0x10
-    MULWF   DIGIT1, A ;most significant digit in deci
-    MOVF    PRODL, W, A
-    ADDWF   DIGIT2, 0, 0 ;store result on W
-    MOVWF   ADRESH, A
-    
-    ;;; Lower byte
-    MOVLW   0x10
-    MULWF   DIGIT3, A ;most significant digit in deci
-    MOVF    PRODL, W, A
-    ADDWF   DIGIT4, 0, 0 ;store result on W
-    MOVWF   ADRESL, A
+	;;; Higher byte
+	MOVLW   0x10
+	MULWF   DIGIT1, A ;most significant digit in deci
+	MOVF    PRODL, W, A
+	ADDWF   DIGIT2, 0, 0 ;store result on W
+	MOVWF   ADRESH, A
+
+	;;; Lower byte
+	MOVLW   0x10
+	MULWF   DIGIT3, A ;most significant digit in deci
+	MOVF    PRODL, W, A
+	ADDWF   DIGIT4, 0, 0 ;store result on W
+	MOVWF   ADRESL, A
     
     return
     
