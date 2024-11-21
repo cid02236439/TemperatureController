@@ -2,7 +2,7 @@
 
 extrn	UART_Setup, UART_Transmit_Message  ; external uart subroutines
 extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex ; external LCD subroutines
-extrn	ADC_Setup, ADC_Read		   ; external ADC subroutines
+extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; external ADC subroutines
 	
 psect	udata_acs   ; reserve data space in access ram
 counter:    ds 1    ; reserve one byte for a counter variable
@@ -57,6 +57,7 @@ loop: 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 	
 measure_loop:
 	call	ADC_Read
+	call	hex_to_deci_converter
 	movf	ADRESH, W, A
 	call	LCD_Write_Hex
 	movf	ADRESL, W, A
