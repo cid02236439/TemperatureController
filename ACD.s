@@ -46,6 +46,54 @@ adc_loop:
 	return
 
 ;;;	
+hex_to_deci_converter:
+	;;; First Multiplication
+	MOVFF   ADRESH, ARG1H
+	MOVFF   ADRESL, ARG1L
+
+	MOVLW   0x41
+	MOVWF   ARG2H, A
+	MOVLW   0x8A
+	MOVWF   ARG2L, A
+
+	CALL    long_16x16_multiplication
+
+	MOVFF   RES3, DIGIT1    ;store the most significant byte
+
+	;;; Second Multiplication
+	MOVFF   RES2, BRG1H
+	MOVFF   RES1, BRG1M
+	MOVFF   RES0, BRG1L
+
+	MOVLW   0x0A
+	MOVWF   BRG2, A
+
+	CALL    asymmetric_24x8_multiplication
+
+	MOVFF   RES3, DIGIT2
+
+	;;; Third Multiplication
+	MOVFF   RES2, BRG1H
+	MOVFF   RES1, BRG1M
+	MOVFF   RES0, BRG1L
+
+	CALL    asymmetric_24x8_multiplication
+
+	MOVFF   RES3, DIGIT3
+
+	;;; Fourth Multiplication
+	MOVFF   RES2, BRG1H
+	MOVFF   RES1, BRG1M
+	MOVFF   RES0, BRG1L
+
+	CALL    asymmetric_24x8_multiplication
+
+	MOVFF   RES3, DIGIT4
+
+	call digit_combiner
+
+	return
+	
 long_16x16_multiplication:
 	MOVF	ARG1L, W, A
 	MULWF	ARG2L, A ; ARG1L * ARG2L-> 
@@ -109,55 +157,7 @@ asymmetric_24x8_multiplication:
 	ADDWFC	RES3, 1, 0 ;
 	
 	return
-    
-	
-hex_to_deci_converter:
-	;;; First Multiplication
-	MOVFF   ADRESH, ARG1H
-	MOVFF   ADRESL, ARG1L
 
-	MOVLW   0x41
-	MOVWF   ARG2H, A
-	MOVLW   0x8A
-	MOVWF   ARG2L, A
-
-	CALL    long_16x16_multiplication
-
-	MOVFF   RES3, DIGIT1    ;store the most significant byte
-
-	;;; Second Multiplication
-	MOVFF   RES2, BRG1H
-	MOVFF   RES1, BRG1M
-	MOVFF   RES0, BRG1L
-
-	MOVLW   0x0A
-	MOVWF   BRG2, A
-
-	CALL    asymmetric_24x8_multiplication
-
-	MOVFF   RES3, DIGIT2
-
-	;;; Third Multiplication
-	MOVFF   RES2, BRG1H
-	MOVFF   RES1, BRG1M
-	MOVFF   RES0, BRG1L
-
-	CALL    asymmetric_24x8_multiplication
-
-	MOVFF   RES3, DIGIT3
-
-	;;; Fourth Multiplication
-	MOVFF   RES2, BRG1H
-	MOVFF   RES1, BRG1M
-	MOVFF   RES0, BRG1L
-
-	CALL    asymmetric_24x8_multiplication
-
-	MOVFF   RES3, DIGIT4
-
-	call digit_combiner
-
-	return
     
 digit_combiner:
 	;;; Higher byte
