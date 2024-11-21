@@ -91,12 +91,12 @@ asymmetric_24x8_multiplication:
 	MOVF	BRG1M, W, A 
 	MULWF	BRG2, A ; BRG1M * BRG2-> 
 		    ; PRODH:PRODL 
+		    
+	MOVFF	PRODH, RES2 ;
 	MOVF	PRODL, W, A ; 
-	ADDWF	RES1, 1, 0 ; Add cross 
-	MOVF	PRODH, W, A ; products 
-	ADDWFC	RES2, 1, 0 ; 
+	ADDWFC	RES1, 1, 0 ; Add cross ; 
 	CLRF	WREG, A ; 
-	ADDWFC	RES3, 1, 0 ; 
+	ADDWFC	RES2, 1, 0 ; 
 			; 
 	MOVF	BRG1H, W, A ; 
 	MULWF	BRG2, A ; BRG1H * BRG2-> 
