@@ -91,25 +91,37 @@ hex_to_deci_converter:
 	MOVFF   RES3, DIGIT4
 
 	call digit_combiner
+	
+	
 
 	return
 	
 long_16x16_multiplication:
+    
+	;movlw	0x04
+	;movwf	ARG1H, a
+	;movlw	0xd2
+	;movwf	ARG1L, a
+	;movlw	0x41
+	;movwf	ARG2H, a
+	;movlw	0x8a
+	;movwf	ARG2L, a
+    
 	MOVF	ARG1L, W, A
 	MULWF	ARG2L, A ; ARG1L * ARG2L-> 
-		    ; PRODH:PRODL 
+			; PRODH:PRODL 
 	MOVFF	PRODH, RES1 ; 
 	MOVFF	PRODL, RES0 ; 
 	; 
 	MOVF	ARG1H, W, A 
 	MULWF	ARG2H, A ; ARG1H * ARG2H-> 
-		    ; PRODH:PRODL 
+			; PRODH:PRODL 
 	MOVFF	PRODH, RES3 ; 
 	MOVFF	PRODL, RES2 ; 
 	; 
 	MOVF	ARG1L, W, A 
 	MULWF	ARG2H, A ; ARG1L * ARG2H-> 
-		    ; PRODH:PRODL 
+			; PRODH:PRODL 
 	MOVF	PRODL, W, A ; 
 	ADDWF	RES1, 1, 0 ; Add cross 
 	MOVF	PRODH, W, A ; products 
@@ -119,7 +131,7 @@ long_16x16_multiplication:
 			; 
 	MOVF	ARG1H, W, A ; 
 	MULWF	ARG2L, A ; ARG1H * ARG2L-> 
-		    ; PRODH:PRODL 
+			; PRODH:PRODL 
 	MOVF	PRODL, W, A ; 
 	ADDWF	RES1, 1, 0 ; Add cross 
 	MOVF	PRODH, W, A ; products 
@@ -127,40 +139,71 @@ long_16x16_multiplication:
 	CLRF	WREG, A ; 
 	ADDWFC	RES3, 1, 0 ;
 	
+	;MOVFF	RES3, ADRESH, A ;TESTING
+	;MOVFF	RES2, ADRESL, A	;TESTING
+	
 	return
 
 asymmetric_24x8_multiplication:
+	
+	MOVLW	0x3b
+	movwf	BRG1H, A
+	MOVLW	0xEB
+	movwf	BRG1M, A
+	MOVLW	0x34
+	movwf	BRG1L, A
+	MOVLW	0x0A
+	movwf	BRG2, A
+	
+	;LOW * 10
 	MOVF	BRG1L, W, A
-	MULWF	BRG2, A ; BRG1L * BRG2-> 
-		    ; PRODH:PRODL 
+	MULWF	BRG2, A ; BRG1L * BRG2-> PRODH:PRODL 
 	MOVFF	PRODH, RES1 ; 
 	MOVFF	PRODL, RES0 ; 
-	; 
+	
+	;MIDDLE * 10
 	MOVF	BRG1M, W, A 
-	MULWF	BRG2, A ; BRG1M * BRG2-> 
-		    ; PRODH:PRODL 
-		    
+	MULWF	BRG2, A ; BRG1M * BRG2-> PRODH:PRODL 
 	MOVFF	PRODH, RES2 ;
 	MOVF	PRODL, W, A ; 
 	ADDWFC	RES1, 1, 0 ; Add cross ; 
 	CLRF	WREG, A ; 
 	ADDWFC	RES2, 1, 0 ; 
 			; 
+	;HIGH * 10
 	MOVF	BRG1H, W, A ; 
-	MULWF	BRG2, A ; BRG1H * BRG2-> 
-		    ; PRODH:PRODL 
-	MOVF	PRODL, W, A ; 
-	ADDWF	RES1, 1, 0 ; Add cross 
-	MOVF	PRODH, W, A ; products 
-	ADDWFC	RES2, 1, 0 ; 
-	CLRF	WREG, A ; 
-	ADDWFC	RES3, 1, 0 ;
+	MULWF	BRG2, A ; BRG1H * BRG2-> PRODH:PRODL 
+	
+	MOVFF	PRODH, RES3
+	MOVF	PRODL, W, A
+	ADDWFC	RES2, 1, 0
+	CLRF	WREG, A
+	ADDWFC	RES3,1,0
+	
+	;MOVF	PRODL, W, A ; 
+	;ADDWF	RES1, 1, 0 ; Add cross 
+	;MOVF	PRODH, W, A ; products 
+	;ADDWFC	RES2, 1, 0 ; 
+	;CLRF	WREG, A ; 
+	;ADDWFC	RES3, 1, 0 ;
+	
+	;MOVFF	RES3, ADRESH, A
+	;MOVFF	RES2, ADRESL, A
 	
 	return
 
     
 digit_combiner:
 	;;; Higher byte
+	;movlw	0x05
+	;movwf	DIGIT1, a
+	;movlw	0x02
+	;movwf	DIGIT2, a
+	;movlw	0x03
+	;movwf	DIGIT3, a
+	;movlw	0x04
+	;movwf	DIGIT4, a
+	
 	MOVLW   0x10
 	MULWF   DIGIT1, A ;most significant digit in deci
 	MOVF    PRODL, W, A
@@ -174,6 +217,6 @@ digit_combiner:
 	ADDWF   DIGIT4, 0, 0 ;store result on W
 	MOVWF   ADRESL, A
     
-    return
+	return
     
 end
