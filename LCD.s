@@ -23,6 +23,8 @@ LCD_Setup:
 	movwf	TRISB, A
 	movlw   40
 	call	LCD_delay_ms	; wait 40ms for LCD to start up properly
+	
+	
 	movlw	00110000B	; Function set 4-bit
 	call	LCD_Send_Byte_I
 	movlw	10		; wait 40us
@@ -33,17 +35,27 @@ LCD_Setup:
 	call	LCD_delay_x4us
 	movlw	00101000B	; repeat, 2 line display 5x8 dot characters
 	call	LCD_Send_Byte_I
+	
+	
 	movlw	10		; wait 40us
 	call	LCD_delay_x4us
 	movlw	00001111B	; display on, cursor on, blinking on
 	call	LCD_Send_Byte_I
 	movlw	10		; wait 40us
+	
 	call	LCD_delay_x4us
 	movlw	00000001B	; display clear
 	call	LCD_Send_Byte_I
+	
 	movlw	2		; wait 2ms
 	call	LCD_delay_ms
 	movlw	00000110B	; entry mode incr by 1 no shift
+	call	LCD_Send_Byte_I
+	
+	
+	movlw	10		; wait 40us
+	call	LCD_delay_x4us
+	movlw	0xc0	;second line
 	call	LCD_Send_Byte_I
 	movlw	10		; wait 40us
 	call	LCD_delay_x4us
