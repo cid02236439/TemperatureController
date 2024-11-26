@@ -1,6 +1,6 @@
 #include <xc.inc>
 
-global  ADC_Setup, ADC_Read, hex_to_deci_converter     
+global  ADC_Setup, ADC_Read, hex_to_deci_converter, RES0, RES1, RES2, RES3, BRG2, BRG1H, BRG1M, BRG1L
     
 psect	udata_acs   ; reserve data space in access ram
 ARG1L:    ds	1
@@ -146,14 +146,14 @@ long_16x16_multiplication:
 
 asymmetric_24x8_multiplication:
 	
-	MOVLW	0x3b
-	movwf	BRG1H, A
-	MOVLW	0xEB
-	movwf	BRG1M, A
-	MOVLW	0x34
-	movwf	BRG1L, A
-	MOVLW	0x0A
-	movwf	BRG2, A
+	;MOVLW	0x3b
+	;movwf	BRG1H, A
+	;MOVLW	0xEB
+	;;movwf	BRG1M, A
+	;MOVLW	0x34
+	;movwf	BRG1L, A
+	;MOVLW	0x0A
+	;movwf	BRG2, A
 	
 	;LOW * 10
 	MOVF	BRG1L, W, A
@@ -166,7 +166,7 @@ asymmetric_24x8_multiplication:
 	MULWF	BRG2, A ; BRG1M * BRG2-> PRODH:PRODL 
 	MOVFF	PRODH, RES2 ;
 	MOVF	PRODL, W, A ; 
-	ADDWFC	RES1, 1, 0 ; Add cross ; 
+	ADDWF	RES1, 1, 0 ; Add cross ; 
 	CLRF	WREG, A ; 
 	ADDWFC	RES2, 1, 0 ; 
 			; 
@@ -180,10 +180,9 @@ asymmetric_24x8_multiplication:
 	;CLRF	WREG, A
 	;ADDWFC	RES3,1,0
 	
+	MOVFF	PRODH, RES3 ;
 	MOVF	PRODL, W, A ; 
-	ADDWF	RES1, 1, 0 ; Add cross 
-	MOVF	PRODH, W, A ; products 
-	ADDWFC	RES2, 1, 0 ; 
+	ADDWF	RES2, 1, 0 ; Add cross 
 	CLRF	WREG, A ; 
 	ADDWFC	RES3, 1, 0 ;
 	
