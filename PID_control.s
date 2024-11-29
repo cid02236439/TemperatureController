@@ -1,6 +1,6 @@
 #include <xc.inc>
     
-global
+; global
     
 psect	udata_acs  
 ref:	    ds  1
@@ -46,7 +46,7 @@ error_signal_calculation:
 error_sign_checking:
     BN	negative_err_handling
     BNN	positive_err_handling
-    REUTRN
+    RETURN
 negative_err_handling:
     ;;;
     ; Turn off heating element if ref < current
@@ -66,11 +66,11 @@ output_voltage_calculation:
 propotional_term:
     MOVF    K_p, W, A
     MULWF   err, A ;K_p * err
-    MOVWF   proportional, 0, 0
+    MOVWF   proportional, A
 total:
     ADDLW   0x00
-    ADDWF   propotional, 0, 0
-    MOVWF   output
+    ADDWF   proportional, 0, 0
+    MOVWF   output, A
     RETURN
 
     
