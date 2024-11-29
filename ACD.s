@@ -1,6 +1,6 @@
 #include <xc.inc>
 
-global  ADC_Setup, ADC_Read, hex_to_deci_converter, RES0, RES1, RES2, RES3, BRG2, BRG1H, BRG1M, BRG1L
+global  ADC_Setup, ADC_Read, hex_to_deci_converter
     
 psect	udata_acs   ; reserve data space in access ram
 ARG1L:    ds	1
