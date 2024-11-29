@@ -1,6 +1,6 @@
 #include <xc.inc>
 
-global  ADC_Potentiometer_Setup, ADC_Potentiometer_Read, hex_to_deci_converter
+; global  ADC_Potentiometer_Setup, ADC_Potentiometer_Read
     
 psect	udata_acs   ; reserve data space in access ram
 ARG1L:    ds	1
