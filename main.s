@@ -3,7 +3,7 @@
 ;extrn	UART_Setup, UART_Transmit_Message  ; external uart subroutines
 extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex,LCD_Send_Byte_I ; external LCD subroutines
 extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; external ADC subroutines
-extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read
+extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter
     
 psect	udata_acs   ; reserve data space in access ram
 counter:    ds 1    ; reserve one byte for a counter variable
@@ -105,7 +105,7 @@ loop2: 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 potentiometer_loop:
 	call	ADC_Potentiometer_Setup	;setup ADC for Potentiometer
 	call	ADC_Potentiometer_Read
-	call	hex_to_deci_converter
+	call	potentiometer_hex_to_deci_converter
 	movf	ADRESH, W, A
 	movff	ADRESH, 0x9a, A
 	call	LCD_Write_Hex
@@ -113,11 +113,7 @@ potentiometer_loop:
 	movff	ADRESL, 0x9b, A
 	call	LCD_Write_Hex
 	
-	movlw	0x50
-	movwf	0x20
-	movwf	0x21
-	movwf	0x22
-	;call	delay1
+	
     
 	; a delay subroutine if you need one, times around loop in delay_count
 delay:	decfsz	delay_count, A	; decrement until zero
