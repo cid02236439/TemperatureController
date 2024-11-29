@@ -1,6 +1,6 @@
 #include <xc.inc>
 
-global  ADC_Potentiometer_Setup, ADC_Potentiometer_Read
+global  ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter
     
 psect	udata_acs   ; reserve data space in access ram
 ARG1L:    ds	1
@@ -22,6 +22,8 @@ DIGIT1:	ds  1
 DIGIT2:	ds  1
 DIGIT3:	ds  1
 DIGIT4:	ds  1
+    
+temp_DIGIT: ds	1
     
     
 psect	adc_code, class=CODE
@@ -47,7 +49,7 @@ adc_loop:
 	return
 
 ;;;	
-hex_to_deci_converter:
+potentiometer_hex_to_deci_converter:
 	;;; First Multiplication
 	MOVFF   ADRESH, ARG1H
 	MOVFF   ADRESL, ARG1L
@@ -90,10 +92,9 @@ hex_to_deci_converter:
 	CALL    asymmetric_24x8_multiplication
 
 	MOVFF   RES3, DIGIT4
-
+	
+	CALL digit_shift
 	call digit_combiner
-	
-	
 
 	return
 	
@@ -220,11 +221,24 @@ digit_combiner:
 	return
     
 reading_shift:
-	MOVLW	0x64 ;shift potentiometer reading by 10
-	ADDWF	ADRESL, 1, 0 ;store result on ADRESHL
-	CLRF	WREG, A
-	ADDWFC	ADRESH
-	return
+	MOVLW	0x08 ;shift potentiometer reading by 10
+	;ADDWF	ADRESL, 1, 0 ;store result on ADRESHL
+	;CLRF	WREG, A
+	;ADDWFC	ADRESH
+	ADDWF	ADRESH
+	RETURN
+	
+digit_shift:
+	MOVF	DIGIT1, W, A
+	MOVFF	DIGIT2,	temp_DIGIT, A
+	MOVWF	DIGIT2, A
+	
+	MOVFF	DIGIT3,	DIGIT4, A
+	MOVFF	temp_DIGIT, DIGIT3, A
+	
+	MOVLW	0x00
+	MOVWF	DIGIT1
+	RETURN
 end
 
 
