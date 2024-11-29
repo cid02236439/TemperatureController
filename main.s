@@ -3,7 +3,7 @@
 ;extrn	UART_Setup, UART_Transmit_Message  ; external uart subroutines
 extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex,LCD_Send_Byte_I ; external LCD subroutines
 extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; external ADC subroutines
-
+extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read
     
 psect	udata_acs   ; reserve data space in access ram
 counter:    ds 1    ; reserve one byte for a counter variable
@@ -35,7 +35,8 @@ setup:	bcf	CFGS	; point to Flash program memory
 	bsf	EEPGD 	; access Flash program memory
 	;call	UART_Setup	; setup UART
 	call	LCD_Setup	; setup UART
-	call	ADC_Setup	; setup ADC
+	
+	
 	goto	start
 	
 	; ******* Main programme ****************************************
@@ -64,7 +65,7 @@ loop: 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 	call	LCD_Write_Message
 	
 measure_loop:
-	
+	call	ADC_Setup	; setup ADC
 	call	ADC_Read
 	call	hex_to_deci_converter
 	movf	ADRESH, W, A
@@ -72,7 +73,6 @@ measure_loop:
 	call	LCD_Write_Hex
 	movf	ADRESL, W, A
 	movff	ADRESL, 0x8e, A
-	
 	call	LCD_Write_Hex
 	
 
@@ -100,12 +100,25 @@ loop2: 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 	lfsr	2, myArray2
 	call	LCD_Write_Message
 	
+	
+	
+potentiometer_loop:
+	call	ADC_Potentiometer_Setup	;setup ADC for Potentiometer
+	call	ADC_Potentiometer_Read
+	call	hex_to_deci_converter
+	movf	ADRESH, W, A
+	movff	ADRESH, 0x9a, A
+	call	LCD_Write_Hex
+	movf	ADRESL, W, A
+	movff	ADRESL, 0x9b, A
+	call	LCD_Write_Hex
+	
 	movlw	0x50
 	movwf	0x20
 	movwf	0x21
 	movwf	0x22
-	call	delay1
-		
+	;call	delay1
+    
 	; a delay subroutine if you need one, times around loop in delay_count
 delay:	decfsz	delay_count, A	; decrement until zero
 	bra	delay
