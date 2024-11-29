@@ -218,4 +218,12 @@ digit_combiner:
     
 	return
     
+	
+delay1: decfsz	0x20, A
+	bra delay1
+	decfsz	0x21, A
+	bra delay1
+	decfsz	0x22, A
+	bra delay1
+	return
 end
