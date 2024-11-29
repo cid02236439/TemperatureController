@@ -7,7 +7,7 @@ extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci
 extrn	delay
     
 psect	udata_acs   ; reserve data space in access ram
-;counter:    ds 1    ; reserve one byte for a counter variable
+delay_count:    ds 1    ; reserve one byte for a counter variable
 current_temp_H:	ds  1
 current_temp_L:	ds  1
 set_temp_H:	ds  1
@@ -38,10 +38,12 @@ setup:	bcf	CFGS	; point to Flash program memory
 	bsf	EEPGD 	; access Flash program memory
 	;call	UART_Setup	; setup UART
 	call	LCD_Setup	; setup UART
-	
 	goto	start
 	
-	; ******* Define Helpful Subroutine ****************************************
+	
+	
+	
+	; ******* Define Helpful Subroutines ****************************************
 ;;; 1. Tempearture Reading/Writing Subroutines	
 read_current_temp:
 	;;;
@@ -88,9 +90,20 @@ write_set_temp:
 	return
 	
 	
+	
 	; ******* Main programme ****************************************
-start: 	
+start: 
+initialise:
+	;;; Initialise delay counter
+	movlw	0xFF
+	movwf	delay_count, A
+    
+	;;; Initial measurement of current temperature
+	call	read_current_temp
+
+loop:
 write_first_line:
+	;;; 1.1 Print out "Temperature:"
 	movlw	0x80
 	call	LCD_Send_Byte_I
 	
@@ -99,11 +112,11 @@ write_first_line:
 	lfsr	2, myArray
 	call	LCD_Write_Message
 	
-	call	read_current_temp
+	;;; 1.2 Print out current temperature
 	call	write_current_temp
 	
-	
 write_second_line:
+	;;; 2.1 Print out "Target:"
 	movlw	0xc0
 	call	LCD_Send_Byte_I
 	
@@ -111,10 +124,15 @@ write_second_line:
 				; don't send the final carriage return to LCD
 	lfsr	2, myArray2
 	call	LCD_Write_Message
-		
+	
+	;;; 2.2 Print out set temperature
 	call	read_set_temp
 	call	write_set_temp
 	
+loop_condition:
+	;;; A delay condition to reduce frequency of current temp being measured
+	decfsz	delay_count, A	; decrement until zero
+	goto	loop
 	end	rst
 
 	
