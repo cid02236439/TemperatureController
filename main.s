@@ -1,17 +1,18 @@
 #include <xc.inc>
 
 ;extrn	UART_Setup, UART_Transmit_Message  ; external uart subroutines
-extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex,LCD_Send_Byte_I ; external LCD subroutines
-extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; external ADC subroutines
-extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter
+extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex,LCD_Send_Byte_I ; LCD subroutines
+extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; ADC subroutines
+extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter ; Potentiometer subroutines
+extrn	check, current, ref
     
 psect	udata_acs   ; reserve data space in access ram
 counter:    ds 1    ; reserve one byte for a counter variable
 delay_count:ds 1    ; reserve one byte for counter in the delay routine
     
 psect	udata_bank4 ; reserve data anywhere in RAM (here at 0x400)
-myArray	EQU 0x81 ; point to the adress in the ram
-myArray2    EQU	0x91 ; point to address in the ram
+myArray	EQU 0x80 ; point to the adress in the ram
+myArray2    EQU	0x90 ; point to address in the ram
 psect	data    
 	; ******* myTable, data in programme memory, and its length *****
 myTable:
@@ -36,6 +37,8 @@ setup:	bcf	CFGS	; point to Flash program memory
 	;call	UART_Setup	; setup UART
 	call	LCD_Setup	; setup UART
 	
+	movlw	0x00	;setup port e for output
+	movwf	TRISE, A
 	
 	goto	start
 	
@@ -73,7 +76,7 @@ measure_loop:
 	call	LCD_Write_Hex
 	movf	ADRESL, W, A
 	movff	ADRESL, 0x8e, A
-	call	LCD_Write_Hex
+	;call	LCD_Write_Hex
 	
 
 		; goto current line in code
@@ -111,11 +114,14 @@ potentiometer_loop:
 	call	LCD_Write_Hex
 	movf	ADRESL, W, A
 	movff	ADRESL, 0x9b, A
-	call	LCD_Write_Hex
+	;call	LCD_Write_Hex
 	
+	call check
+;switch_on:		; switches the heater on if called
+;	movlw	0x00
+;	movwf	PORTE, A
 	
-    
-	; a delay subroutine if you need one, times around loop in delay_count
+; a delay subroutine if you need one, times around loop in delay_count
 delay:	decfsz	delay_count, A	; decrement until zero
 	bra	delay
 	return
@@ -128,4 +134,4 @@ delay1: decfsz	0x20, A
 	bra delay1
 	return
 
-	end	rst
+	end	rst	
