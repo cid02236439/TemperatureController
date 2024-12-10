@@ -4,7 +4,7 @@
 extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex,LCD_Send_Byte_I ; LCD subroutines
 extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; ADC subroutines
 extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter ; Potentiometer subroutines
-extrn	check, current, ref
+extrn	check, current, ref, PID_control_run, output
 extrn	UART_Setup, UART_Transmit_Message
     
 psect	udata_acs   ; reserve data space in access ram
@@ -128,6 +128,7 @@ control:
 ;	movff	0x8d, current, A
 ;	movff	0x9a, ref, A
 	call check
+;	call PID_control_run
 	
 export_current_temp:
 	movlw	current
