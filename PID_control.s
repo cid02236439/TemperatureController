@@ -1,6 +1,6 @@
 #include <xc.inc>
     
-; global
+global check, current, ref
     
 psect	udata_acs  
 ref:	    ds  1
@@ -84,7 +84,25 @@ PID_control_run:
     call    error_sign_checking
     RETURN
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+check:			; checks if the current tmeperature > target temperature
+	movff	0x8d, current, A
+	movff	0x9a, ref, A
     
+	movf	current, W, A	;current temperature
+	cpfslt	ref, A	;compare if target temp (F) < current (W) and skip next line if true
+	bra switch_on
+	bra switch_off
+	
+switch_on:		; switches the heater on if called
+	movlw	0x80
+	movwf	PORTE, A
+	return
+	
+switch_off: ;switches heater off if called
+	movlw	0x00
+	movwf	PORTE, A
+	return    
     
-
+end
 
