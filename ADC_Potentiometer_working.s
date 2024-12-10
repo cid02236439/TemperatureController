@@ -94,6 +94,7 @@ potentiometer_hex_to_deci_converter:
 	MOVFF   RES3, DIGIT4
 	
 	CALL digit_shift
+;	call digit_shift
 	call digit_combiner
 
 	return
@@ -211,7 +212,7 @@ digit_combiner:
 	ADDWF   DIGIT3, 0, 0 ;store result on W
 	MOVWF   ADRESH, A
 
-	;;; Lower byte
+;	;; Lower byte
 ;	MOVLW   0x10
 ;	MULWF   DIGIT3, A ;most significant digit in deci
 ;	MOVF    PRODL, W, A
