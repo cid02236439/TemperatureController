@@ -1,6 +1,6 @@
 #include <xc.inc>
     
-global check, current, ref
+global check, current, ref, PID_control_run, output, err
     
 psect	udata_acs  
 ref:	    ds  1
@@ -16,19 +16,12 @@ derivative:	ds  1
 output:	    ds	1
 	
 psect	PID_code, class=CODE
-;;; 1. Initialise constans
-ref_signal_setup:
-    ;;;
-    ; A subroutine to take the target temperture from WREG and store it into ref
-    ;;;
-    MOVWF   ref, A
-    RETURN
-    
+;;; 1. Initialise constans    
 tuning_control_setup:
     ;;;
     ; A subroutine to set the proportional control coefficient
     ;;;
-    MOVLW   0x0A
+    MOVLW   0x01
     MOVWF   K_p, A
     RETURN
    
@@ -41,7 +34,6 @@ error_signal_calculation:
     SUBWF   ref, 0, 0 ;Store err = (current-ref) in WREG
     MOVWF   err, A
     RETURN
-
     
 error_sign_checking:
     BN	negative_err_handling
@@ -72,7 +64,6 @@ total:
     ADDWF   proportional, 0, 0
     MOVWF   output, A
     RETURN
-
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; 3. PID sequence
@@ -80,8 +71,10 @@ PID_control_run:
     ;;;
     ; Require current value input via WREG
     ;;;
+    call    tuning_control_setup
     call    error_signal_calculation
     call    error_sign_checking
+    MOVFF   output, PORTE, A
     RETURN
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
