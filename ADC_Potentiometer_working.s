@@ -206,17 +206,17 @@ digit_combiner:
 	;movwf	DIGIT4, a
 	
 	MOVLW   0x10
-	MULWF   DIGIT1, A ;most significant digit in deci
+	MULWF   DIGIT2, A ;most significant digit in deci
 	MOVF    PRODL, W, A
-	ADDWF   DIGIT2, 0, 0 ;store result on W
+	ADDWF   DIGIT3, 0, 0 ;store result on W
 	MOVWF   ADRESH, A
 
 	;;; Lower byte
-	MOVLW   0x10
-	MULWF   DIGIT3, A ;most significant digit in deci
-	MOVF    PRODL, W, A
-	ADDWF   DIGIT4, 0, 0 ;store result on W
-	MOVWF   ADRESL, A
+;	MOVLW   0x10
+;	MULWF   DIGIT3, A ;most significant digit in deci
+;	MOVF    PRODL, W, A
+;	ADDWF   DIGIT4, 0, 0 ;store result on W
+;	MOVWF   ADRESL, A
     
 	return
     
@@ -225,7 +225,7 @@ reading_shift:
 	;ADDWF	ADRESL, 1, 0 ;store result on ADRESHL
 	;CLRF	WREG, A
 	;ADDWFC	ADRESH
-	ADDWF	ADRESH
+	ADDWF	ADRESH, A
 	RETURN
 	
 digit_shift:
@@ -237,7 +237,7 @@ digit_shift:
 	MOVFF	temp_DIGIT, DIGIT3, A
 	
 	MOVLW	0x00
-	MOVWF	DIGIT1
+	MOVWF	DIGIT1, A
 	RETURN
 end
 
