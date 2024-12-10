@@ -23,6 +23,7 @@ DIGIT2:	ds  1
 DIGIT3:	ds  1
 DIGIT4:	ds  1
     
+temp_DIGIT: ds	1
     
 psect	adc_code, class=CODE
 ADC_Setup:
@@ -218,12 +219,25 @@ digit_combiner:
     
 	return
     
+
+reading_shift:
+	MOVLW	0x08 ;shift potentiometer reading by 10
+	;ADDWF	ADRESL, 1, 0 ;store result on ADRESHL
+	;CLRF	WREG, A
+	;ADDWFC	ADRESH
+	ADDWF	ADRESH, A
+	RETURN
 	
-delay1: decfsz	0x20, A
-	bra delay1
-	decfsz	0x21, A
-	bra delay1
-	decfsz	0x22, A
-	bra delay1
-	return
+digit_shift:
+	MOVF	DIGIT1, W, A
+	MOVFF	DIGIT2,	temp_DIGIT, A
+	MOVWF	DIGIT2, A
+	
+	MOVFF	DIGIT3,	DIGIT4, A
+	MOVFF	temp_DIGIT, DIGIT3, A
+	
+	MOVLW	0x00
+	MOVWF	DIGIT1, A
+	RETURN
+	
 end
