@@ -85,10 +85,7 @@ PID_control_run:
     RETURN
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
-check:			; checks if the current tmeperature > target temperature
-	movff	0x8d, current, A
-	movff	0x9a, ref, A
-    
+check:			; checks if the current tmeperature > target temperature  
 	movf	current, W, A	;current temperature
 	cpfslt	ref, A	;compare if target temp (F) < current (W) and skip next line if true
 	bra switch_on
