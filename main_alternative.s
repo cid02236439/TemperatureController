@@ -5,6 +5,7 @@
 ;extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; external ADC subroutines
 ;extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter
 ;extrn	delay
+;extrn	check, current, ref
 ;    
 ;psect	udata_acs   ; reserve data space in access ram
 ;delay_count:    ds 1    ; reserve one byte for a counter variable
@@ -14,8 +15,8 @@
 ;set_temp_L:	ds  1
 ;    
 ;psect	udata_bank4 ; reserve data anywhere in RAM (here at 0x400)
-;myArray	    EQU 0x81 ; point to the adress in the ram
-;myArray2    EQU	0x91 ; point to address in the ram
+;myArray	    EQU 0x80 ; point to the adress in the ram
+;myArray2    EQU	0x90 ; point to address in the ram
 ;psect	data    
 ;	; ******* myTable, data in programme memory, and its length *****
 ;myTable:
@@ -53,8 +54,8 @@
 ;	movff	current_temp_H, 0x8d, A
 ;	call	LCD_Write_Hex
 ;	
-;	movff	current_temp_L, 0x8e, A
-;	call	LCD_Write_Hex
+;;	movff	current_temp_L, 0x8e, A
+;;	call	LCD_Write_Hex
 ;	return
 ;	
 ;read_set_temp:
@@ -75,13 +76,23 @@
 ;	movff	set_temp_H, 0x9a, A
 ;	call	LCD_Write_Hex
 ;	
-;	movff	set_temp_L, 0x9b, A
-;	call	LCD_Write_Hex
+;;	movff	set_temp_L, 0x9b, A
+;;	call	LCD_Write_Hex
 ;	return
 ;	
 ;	
-;	
 ;	; ******* Main programme ****************************************
+;
+;setup:	bcf	CFGS	; point to Flash program memory  
+;	bsf	EEPGD 	; access Flash program memory
+;	;call	UART_Setup	; setup UART
+;	call	LCD_Setup	; setup UART
+;	
+;	movlw	0x00	;setup port e for output
+;	movwf	TRISE, A
+;	
+;	goto	start
+;
 ;start: 
 ;initialise:
 ;	;;; Initialise delay counter
@@ -119,13 +130,18 @@
 ;	call	read_set_temp
 ;	call	write_set_temp
 ;	
+;control:
+;	movff	current_temp_H, current, A
+;	movff	set_temp_H, ref, A	
+;	call check
+;	
 ;loop_condition:
 ;	;;; A delay condition to reduce frequency of current temp being measured
 ;	decfsz	delay_count, A	; decrement until zero
 ;	goto	loop
 ;	end	rst
-
-	
-
-
-
+;
+;	
+;
+;
+;
