@@ -1,6 +1,6 @@
 #include <xc.inc>
     
-global check, current, ref, PID_control_run, output, err
+global check, current_deci, ref_deci, PID_control_run, output, err, current, ref
     
 psect	udata_acs  
 ref:	    ds  1
@@ -14,6 +14,9 @@ integral:	ds  1
 derivative:	ds  1
     
 output:	    ds	1
+    
+current_deci:	ds  1
+ref_deci:   ds	1
 	
 psect	PID_code, class=CODE
 ;;; 1. Initialise constans    
@@ -79,8 +82,8 @@ PID_control_run:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 check:			; checks if the current tmeperature > target temperature  
-	movf	current, W, A	;current temperature
-	cpfslt	ref, A	;compare if target temp (F) < current (W) and skip next line if true
+	movf	current_deci, W, A	;current temperature
+	cpfslt	ref_deci, A	;compare if target temp (F) < current (W) and skip next line if true
 	bra switch_on
 	bra switch_off
 	
