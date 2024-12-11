@@ -7,12 +7,17 @@ extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci
 extrn	check, current_deci, ref_deci, PID_control_run, output, current, ref
 extrn	UART_Setup, UART_Transmit_Message
     
+global	tempH, tempL
+    
 psect	udata_acs   ; reserve data space in access ram
 counter:    ds 1    ; reserve one byte for a counter variable
 delay_count:	ds 1    ; reserve one byte for counter in the delay routine
     
+tempH:	ds  1
+tempL:	ds  1
+    
 psect	udata_bank4 ; reserve data anywhere in RAM (here at 0x400)
-myArray	    EQU 0x80 ; point to the adress in the ram
+myArray	   EQU 0x80 ; point to the adress in the ram
 myArray2    EQU	0x90 ; point to address in the ram
 ;message_length   EQU	0x02
    
@@ -63,9 +68,9 @@ loop:
 	decfsz	counter, A		; count down to zero
 	bra	loop		; keep going until finished	
     
-	movlw	myTable_l	; output message to UART
-	lfsr	2, myArray
-	call	UART_Transmit_Message
+;	movlw	myTable_l	; output message to UART
+;	lfsr	2, myArray
+;	call	UART_Transmit_Message
 	
 	;;; 1.1 Print out "Temperature:"
 	movlw	0x80
@@ -79,6 +84,7 @@ current_temp:
 	;;; 1.2 Print out current temperature
 	call	ADC_Setup	; setup ADC
 	call	ADC_Read
+	
 	call	hex_to_deci_converter
 	movf	ADRESH, W, A
 	movff	ADRESH, current_deci, A
@@ -118,24 +124,52 @@ target_temp:
 	;;; 2.2 Print out set temperature
 	call	ADC_Potentiometer_Setup	;setup ADC for Potentiometer
 	call	ADC_Potentiometer_Read
+	
 	call	potentiometer_hex_to_deci_converter
 	movf	ADRESH, W, A
-	movff	ADRESH, ref, A
+	movff	ADRESH, ref_deci, A
 	call	LCD_Write_Hex
 ;	movf	ADRESL, W, A
 ;	movff	ADRESL, 0x9b, A
 	;call	LCD_Write_Hex
 	
-control:
-;	movff	0x8d, current, A
-;	movff	0x9a, ref, A
-	call check
-;	call PID_control_run
-	
-export_current_temp:
+;export_current_temp:
 ;	movlw	0x02
 ;	lfsr	2,  current_deci
 ;	call	UART_Transmit_Message
+	
+control:
+	;;; Convert current from deci to hex
+	movlw	0x0F
+	andwf	current_deci, 0, 0
+	movwf	tempL, A
+	
+	swapf	current_deci, 0, 0
+	andlw	0x0F
+	mullw	0x0A
+	movff	PRODL, tempH, a
+	
+	movf	tempH, W
+	addwf	tempL, 0, 0
+	movwf	current
+    
+	;;; Convert ref from deci to hex
+	movlw	0x0F
+	andwf	ref_deci, 0, 0
+	movwf	tempL, A
+	
+	swapf	ref_deci, 0, 0
+	andlw	0x0F
+	mullw	0x0A
+	movff	PRODL, tempH, a
+	
+	movf	tempH, W
+	addwf	tempL, 0, 0
+	movwf	ref
+	
+;	call check
+	call PID_control_run
+	
 	
 ; a delay subroutine if you need one, times around loop in delay_count
 delay:	decfsz	delay_count, A	; decrement until zero
