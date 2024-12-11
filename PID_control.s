@@ -24,7 +24,7 @@ tuning_control_setup:
     ;;;
     ; A subroutine to set the proportional control coefficient
     ;;;
-    MOVLW   0x01
+    MOVLW   0x05
     MOVWF   K_p, A
     RETURN
    
@@ -32,7 +32,6 @@ tuning_control_setup:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; 2. Define some handy subroutines
 error_signal_calculation:
-    MOVWF   current, A
     MOVF    current, W, A
     SUBWF   ref, 0, 0 ;Store err = (current-ref) in WREG
     MOVWF   err, A
@@ -61,11 +60,12 @@ output_voltage_calculation:
 propotional_term:
     MOVF    K_p, W, A
     MULWF   err, A ;K_p * err
-    MOVWF   proportional, A
+    MOVFF   PRODL, proportional, A
 total:
     ADDLW   0x00
     ADDWF   proportional, 0, 0
     MOVWF   output, A
+    movwf   PORTE, A
     RETURN
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
