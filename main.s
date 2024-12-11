@@ -4,16 +4,18 @@
 extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex,LCD_Send_Byte_I ; LCD subroutines
 extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; ADC subroutines
 extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter ; Potentiometer subroutines
-extrn	check, current, ref, PID_control_run, output
+extrn	check, current_deci, ref_deci, PID_control_run, output, current, ref
 extrn	UART_Setup, UART_Transmit_Message
     
 psect	udata_acs   ; reserve data space in access ram
-;counter:    ds 1    ; reserve one byte for a counter variable
+counter:    ds 1    ; reserve one byte for a counter variable
 delay_count:	ds 1    ; reserve one byte for counter in the delay routine
     
 psect	udata_bank4 ; reserve data anywhere in RAM (here at 0x400)
 myArray	    EQU 0x80 ; point to the adress in the ram
 myArray2    EQU	0x90 ; point to address in the ram
+;message_length   EQU	0x02
+   
 psect	data    
 	; ******* myTable, data in programme memory, and its length *****
 myTable:
@@ -46,24 +48,24 @@ setup:	bcf	CFGS	; point to Flash program memory
 	; ******* Main programme ****************************************
 start: 	
 write_first_line:
-;	lfsr	0, myArray	; Load FSR0 with address in RAM	
-;	movlw	low highword(myTable)	; address of data in PM
-;	movwf	TBLPTRU, A		; load upper bits to TBLPTRU
-;	movlw	high(myTable)	; address of data in PM
-;	movwf	TBLPTRH, A		; load high byte to TBLPTRH
-;	movlw	low(myTable)	; address of data in PM
-;	movwf	TBLPTRL, A		; load low byte to TBLPTRL
-;	movlw	myTable_l	; bytes to read
-;	movwf 	counter, A		; our counter register
-;loop: 	
-;	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
-;	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
-;	decfsz	counter, A		; count down to zero
-;	bra	loop		; keep going until finished	
+	lfsr	0, myArray	; Load FSR0 with address in RAM	
+	movlw	low highword(myTable)	; address of data in PM
+	movwf	TBLPTRU, A		; load upper bits to TBLPTRU
+	movlw	high(myTable)	; address of data in PM
+	movwf	TBLPTRH, A		; load high byte to TBLPTRH
+	movlw	low(myTable)	; address of data in PM
+	movwf	TBLPTRL, A		; load low byte to TBLPTRL
+	movlw	myTable_l	; bytes to read
+	movwf 	counter, A		; our counter register
+loop: 	
+	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
+	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
+	decfsz	counter, A		; count down to zero
+	bra	loop		; keep going until finished	
     
-	;movlw	myTable_l	; output message to UART
-	;lfsr	2, myArray
-	;call	UART_Transmit_Message
+	movlw	myTable_l	; output message to UART
+	lfsr	2, myArray
+	call	UART_Transmit_Message
 	
 	;;; 1.1 Print out "Temperature:"
 	movlw	0x80
@@ -79,7 +81,7 @@ current_temp:
 	call	ADC_Read
 	call	hex_to_deci_converter
 	movf	ADRESH, W, A
-	movff	ADRESH, current, A
+	movff	ADRESH, current_deci, A
 	call	LCD_Write_Hex
 ;	movf	ADRESL, W, A
 ;	movff	ADRESL, 0x8e, A
@@ -88,20 +90,20 @@ current_temp:
 	
 	
 write_second_line:	
-;	lfsr	0, myArray2	; Load FSR0 with address in RAM	
-;	movlw	low highword(myTable2)	; address of data in PM
-;	movwf	TBLPTRU, A		; load upper bits to TBLPTRU
-;	movlw	high(myTable2)	; address of data in PM
-;	movwf	TBLPTRH, A		; load high byte to TBLPTRH
-;	movlw	low(myTable2)	; address of data in PM
-;	movwf	TBLPTRL, A		; load low byte to TBLPTRL
-;	movlw	myTable_2	; bytes to read
-;	movwf 	counter, A		; our counter register
-;loop2: 	
-;	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
-;	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
-;	decfsz	counter, A		; count down to zero
-;	bra	loop2		; keep going until finished
+	lfsr	0, myArray2	; Load FSR0 with address in RAM	
+	movlw	low highword(myTable2)	; address of data in PM
+	movwf	TBLPTRU, A		; load upper bits to TBLPTRU
+	movlw	high(myTable2)	; address of data in PM
+	movwf	TBLPTRH, A		; load high byte to TBLPTRH
+	movlw	low(myTable2)	; address of data in PM
+	movwf	TBLPTRL, A		; load low byte to TBLPTRL
+	movlw	myTable_2	; bytes to read
+	movwf 	counter, A		; our counter register
+loop2: 	
+	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
+	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
+	decfsz	counter, A		; count down to zero
+	bra	loop2		; keep going until finished
 	
 	;;; 2.1 Print out "Target:"
 	movlw	0xc0
@@ -131,8 +133,9 @@ control:
 ;	call PID_control_run
 	
 export_current_temp:
-	movlw	current
-	call	UART_Transmit_Message
+;	movlw	0x02
+;	lfsr	2,  current_deci
+;	call	UART_Transmit_Message
 	
 ; a delay subroutine if you need one, times around loop in delay_count
 delay:	decfsz	delay_count, A	; decrement until zero
