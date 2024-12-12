@@ -24,7 +24,7 @@ tuning_control_setup:
     ;;;
     ; A subroutine to set the proportional control coefficient
     ;;;
-    MOVLW   0x05
+    MOVLW   0x0c
     MOVWF   K_p, A
     RETURN
    
@@ -38,9 +38,17 @@ error_signal_calculation:
     RETURN
     
 error_sign_checking:
+    MOVLW   0x00
+    CPFSEQ  err, a
+    BRA	non_zero_err_handling
+    BRA	zero_err_handling
+go_back_to_main:
+    RETURN
+    
+non_zero_err_handling:    
     BN	negative_err_handling
     BNN	positive_err_handling
-    RETURN
+    GOTO go_back_to_main
 negative_err_handling:
     ;;;
     ; Turn off heating element if ref < current
@@ -54,7 +62,13 @@ positive_err_handling:
     ;;;
     CALL    output_voltage_calculation
     RETURN
-    
+zero_err_handling:
+    ;;;
+    ; Turn off heating element if ref < current
+    ;;;
+    MOVLW   0x00
+    MOVWF   output, A
+    GOTO go_back_to_main
     
 output_voltage_calculation:
 propotional_term:
