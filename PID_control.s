@@ -64,7 +64,7 @@ positive_err_handling:
     RETURN
 zero_err_handling:
     ;;;
-    ; Turn off heating element if ref < current
+    ; Turn off heating element if ref = current
     ;;;
     MOVLW   0x00
     MOVWF   output, A
