@@ -1,6 +1,5 @@
 #include <xc.inc>
 
-;extrn	UART_Setup, UART_Transmit_Message  ; external uart subroutines
 extrn	LCD_Setup, LCD_Write_Message, LCD_Write_Hex,LCD_Send_Byte_I ; LCD subroutines
 extrn	ADC_Setup, ADC_Read, hex_to_deci_converter   ; ADC subroutines
 extrn	ADC_Potentiometer_Setup, ADC_Potentiometer_Read, potentiometer_hex_to_deci_converter ; Potentiometer subroutines
@@ -89,6 +88,7 @@ current_temp:
 	movf	ADRESH, W, A
 	movff	ADRESH, current_deci, A
 	call	LCD_Write_Hex
+	
 ;	movf	ADRESL, W, A
 ;	movff	ADRESL, 0x8e, A
 ;	;call	LCD_Write_Hex
@@ -129,12 +129,13 @@ target_temp:
 	movf	ADRESH, W, A
 	movff	ADRESH, ref_deci, A
 	call	LCD_Write_Hex
+	
 ;	movf	ADRESL, W, A
 ;	movff	ADRESL, 0x9b, A
 	;call	LCD_Write_Hex
 	
-;export_current_temp:
-;	movlw	0x02
+export_current_temp:
+;	movlw	0x01
 ;	lfsr	2,  current_deci
 ;	call	UART_Transmit_Message
 	
