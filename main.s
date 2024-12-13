@@ -133,11 +133,7 @@ target_temp:
 ;	movf	ADRESL, W, A
 ;	movff	ADRESL, 0x9b, A
 	;call	LCD_Write_Hex
-	
-export_current_temp:
-;	movlw	0x01
-;	lfsr	2,  current_deci
-;	call	UART_Transmit_Message
+
 	
 control:
 	;;; Convert current from deci to hex
@@ -170,6 +166,14 @@ control:
 	
 ;	call check
 	call PID_control_run
+	
+export_current_temp:
+	movlw	0x01
+	lfsr	2,  current
+	call	UART_Transmit_Message
+	movlw	0x01
+	lfsr	2,  ref
+	call	UART_Transmit_Message
 	
 	
 ; a delay subroutine if you need one, times around loop in delay_count
